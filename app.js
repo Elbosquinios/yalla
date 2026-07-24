@@ -162,6 +162,7 @@ function entete(titre, retour) {
 /* ===== Ecran : accueil ===== */
 
 function ecranAccueil() {
+  themeCourant = null;
   const dues = cartesDues();
   const nouvelles = nouvellesPourAujourdhui(dues.length);
   const total = dues.length + nouvelles.length;
@@ -680,7 +681,10 @@ function lancerEcriture() {
 
 /* ===== Ecran : liste d'un theme ===== */
 
+let themeCourant = null;
+
 function ecranTheme(idTheme) {
+  themeCourant = idTheme;
   const t = themePar(idTheme);
   const phrases = phrasesDuTheme(idTheme);
   app.innerHTML = html`
@@ -761,7 +765,9 @@ document.addEventListener("change", (e) => {
   if (e.target.id === "toggle-arabe") {
     etat.arabeVisible = e.target.checked;
     sauver();
-    if (session) rendreCarte(); else ecranAccueil();
+    if (session) rendreCarte();
+    else if (themeCourant) ecranTheme(themeCourant);
+    else ecranAccueil();
   }
   if (e.target.id === "fichier-import" && e.target.files[0]) {
     importerProgression(e.target.files[0]);
