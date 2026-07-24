@@ -32,9 +32,12 @@ FICHIER_MANIFEST = RACINE / "data" / "audio_manifest.js"
 DOSSIER_AUDIO = RACINE / "audio"
 FICHIER_LISTE = RACINE / "tools" / "liste_enregistrement.md"
 
-# Silence entre deux phrases : au moins 1 seconde sous -35 dB
-SEUIL_SILENCE = "-35dB"
-DUREE_SILENCE_MIN = 1.0
+# Silence entre deux phrases : valeurs de depart, mais la decoupe auto-calibre
+# en scannant ces grilles jusqu'a trouver le nombre de segments attendu.
+SEUIL_SILENCE = "-30dB"
+DUREE_SILENCE_MIN = 0.9
+GRILLE_SEUILS = ["-30dB", "-28dB", "-32dB", "-35dB", "-26dB", "-38dB"]
+GRILLE_DUREES = [0.9, 0.8, 1.0, 0.7, 1.1, 0.6, 1.2, 0.5, 0.4]
 
 
 def lire_phrases():
@@ -117,15 +120,39 @@ def ffmpeg(*args):
                           capture_output=True, text=True)
 
 
-def detecter_silences(fichier):
+def detecter_silences(fichier, seuil=SEUIL_SILENCE, duree=DUREE_SILENCE_MIN):
     """Retourne [(debut, fin)] des silences via silencedetect."""
     res = subprocess.run(
         ["ffmpeg", "-hide_banner", "-i", str(fichier), "-af",
-         f"silencedetect=noise={SEUIL_SILENCE}:d={DUREE_SILENCE_MIN}", "-f", "null", "-"],
+         f"silencedetect=noise={seuil}:d={duree}", "-f", "null", "-"],
         capture_output=True, text=True)
     debuts = [float(m) for m in re.findall(r"silence_start: ([\d.]+)", res.stderr)]
     fins = [float(m) for m in re.findall(r"silence_end: ([\d.]+)", res.stderr)]
     return list(zip(debuts, fins + [None] * (len(debuts) - len(fins))))
+
+
+def segments_parles(fichier, duree_totale_s, seuil, duree_min):
+    """Segments parles = ce qui reste entre les silences detectes."""
+    segments = []
+    curseur = 0.0
+    for debut_s, fin_s in detecter_silences(fichier, seuil, duree_min):
+        if debut_s - curseur > 0.3:
+            segments.append((curseur, debut_s))
+        curseur = fin_s if fin_s is not None else duree_totale_s
+    if duree_totale_s - curseur > 0.3:
+        segments.append((curseur, duree_totale_s))
+    return segments
+
+
+def calibrer(fichier, duree_totale_s, nb_attendu):
+    """Scanne la grille de parametres jusqu'a obtenir le bon nombre de segments."""
+    for seuil in GRILLE_SEUILS:
+        for duree_min in GRILLE_DUREES:
+            segments = segments_parles(fichier, duree_totale_s, seuil, duree_min)
+            if len(segments) == nb_attendu:
+                print(f"Calibrage : seuil {seuil}, pause min {duree_min}s -> {nb_attendu} segments.")
+                return segments
+    return None
 
 
 def duree_totale(fichier):
@@ -136,14 +163,11 @@ def duree_totale(fichier):
 
 
 def exporter_segment(source, debut, fin, nom):
-    """Extrait [debut, fin], normalise le volume, coupe les silences residuels, exporte en m4a."""
+    """Extrait [debut, fin], normalise le volume, exporte en m4a.
+    Pas de silenceremove ici : les bornes viennent deja de silencedetect."""
     DOSSIER_AUDIO.mkdir(exist_ok=True)
     cible = DOSSIER_AUDIO / f"{nom}.m4a"
-    filtres = (
-        "silenceremove=start_periods=1:start_threshold=-40dB:"
-        "stop_periods=1:stop_threshold=-40dB,"
-        "loudnorm=I=-18:TP=-2"
-    )
+    filtres = "loudnorm=I=-18:TP=-2"
     res = ffmpeg("-i", str(source), "-ss", f"{debut:.3f}", "-to", f"{fin:.3f}",
                  "-af", filtres, "-ac", "1", "-ar", "44100",
                  "-c:a", "aac", "-b:a", "48k", str(cible))
@@ -162,26 +186,17 @@ def commande_decouper(theme, fichier):
         sys.exit(f"Theme inconnu ou vide : {theme}. Themes : {', '.join(themes_presents())}")
 
     duree = duree_totale(fichier)
-    silences = detecter_silences(fichier)
+    segments = calibrer(fichier, duree, len(pistes))
 
-    # Les segments parles = ce qui reste entre les silences
-    segments = []
-    curseur = 0.0
-    for debut_s, fin_s in silences:
-        if debut_s - curseur > 0.3:
-            segments.append((curseur, debut_s))
-        curseur = fin_s if fin_s is not None else duree
-    if duree - curseur > 0.3:
-        segments.append((curseur, duree))
-
-    print(f"{len(segments)} segments detectes, {len(pistes)} pistes attendues.")
-    if len(segments) != len(pistes):
-        print("\nDesaccord ! Pistes attendues dans l'ordre :")
+    if segments is None:
+        segments = segments_parles(fichier, duree, SEUIL_SILENCE, DUREE_SILENCE_MIN)
+        print(f"Aucun calibrage ne donne {len(pistes)} segments "
+              f"(avec les valeurs par defaut : {len(segments)}).")
+        print("\nPistes attendues dans l'ordre :")
         for i, (ident, texte, _) in enumerate(pistes, 1):
             print(f"  {i:2}. {ident}  {texte}")
         print(f"\nSegments trouves : {[f'{a:.1f}-{b:.1f}s' for a, b in segments]}")
-        print("Pistes : reenregistre le memo avec des pauses plus franches,")
-        print(f"ou ajuste SEUIL_SILENCE ({SEUIL_SILENCE}) / DUREE_SILENCE_MIN ({DUREE_SILENCE_MIN}s) en tete de script.")
+        print("Piste : reenregistre le memo avec des pauses plus franches entre les phrases.")
         sys.exit(1)
 
     for (ident, _, _), (debut, fin) in zip(pistes, segments):
