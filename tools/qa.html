@@ -36,7 +36,7 @@
       const tr = document.createElement("tr");
       const dispo = AUDIO_MANIFEST.includes(l.id);
       tr.innerHTML = "<td><code>" + l.id + "</code></td><td>" + l.texte + "</td><td>" +
-        (dispo ? '<audio controls preload="none" src="../audio/' + l.id + '.m4a"></audio>' : '<span class="manquant">manquant</span>') +
+        (dispo ? '<audio controls preload="metadata" src="../audio/' + l.id + '.m4a?v=' + Date.now() + '"></audio>' : '<span class="manquant">manquant</span>') +
         "</td>";
       tableau.appendChild(tr);
     }

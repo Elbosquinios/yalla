@@ -156,10 +156,17 @@ def calibrer(fichier, duree_totale_s, nb_attendu):
 
 
 def duree_totale(fichier):
+    """Duree exacte par decodage complet : les .aac bruts (ADTS) n'ont pas de
+    duree fiable dans leurs metadonnees et ffprobe la sous-estime, ce qui
+    tronquait la derniere piste de chaque theme."""
     res = subprocess.run(
-        ["ffprobe", "-hide_banner", "-show_entries", "format=duration",
-         "-of", "json", str(fichier)], capture_output=True, text=True)
-    return float(json.loads(res.stdout)["format"]["duration"])
+        ["ffmpeg", "-hide_banner", "-i", str(fichier), "-f", "null", "-"],
+        capture_output=True, text=True)
+    temps = re.findall(r"time=(\d+):(\d+):([\d.]+)", res.stderr)
+    if not temps:
+        sys.exit(f"Duree indetectable : {fichier}")
+    h, m, s = temps[-1]
+    return int(h) * 3600 + int(m) * 60 + float(s)
 
 
 def exporter_segment(source, debut, fin, nom):
@@ -207,6 +214,55 @@ def commande_decouper(theme, fichier):
     print(f"\nTermine. Ouvre tools/qa.html (via un serveur local) pour verifier l'alignement.")
 
 
+def commande_recaler(theme, fichier, ident_fusionne):
+    """Repare une decoupe ou le segment de <ident_fusionne> contient DEUX phrases :
+    le coupe en deux a sa pause interne, jette le residu en trop, re-exporte tout."""
+    fichier = Path(fichier)
+    if not fichier.exists():
+        sys.exit(f"Fichier introuvable : {fichier}")
+    pistes = pistes_du_theme(theme)
+    ids = [p[0] for p in pistes]
+    if ident_fusionne not in ids:
+        sys.exit(f"Id inconnu dans ce theme : {ident_fusionne}")
+    i = ids.index(ident_fusionne)
+
+    duree = duree_totale(fichier)
+    segments = calibrer(fichier, duree, len(pistes))
+    if segments is None:
+        sys.exit("Impossible de retrouver la decoupe d'origine.")
+
+    debut_seg, fin_seg = segments[i]
+    # Cherche la pause interne du segment fusionne avec des seuils plus fins
+    sous_segments = None
+    for seuil in GRILLE_SEUILS:
+        for duree_min in [0.5, 0.4, 0.3, 0.25, 0.2]:
+            candidats = [(max(a, debut_seg), min(b, fin_seg))
+                         for a, b in segments_parles(fichier, duree, seuil, duree_min)
+                         if b > debut_seg and a < fin_seg]
+            if len(candidats) == 2:
+                sous_segments = candidats
+                break
+        if sous_segments:
+            break
+    if not sous_segments:
+        sys.exit(f"Pas trouve de pause interne dans le segment de {ident_fusionne} : "
+                 "reenregistre ces deux phrases separement (commande fichier).")
+
+    segments = segments[:i] + sous_segments + segments[i + 1:]
+    # Un segment de trop : jette le plus court (le residu), en priorite apres i
+    if len(segments) > len(pistes):
+        candidats = sorted(range(i + 2, len(segments)), key=lambda k: segments[k][1] - segments[k][0])
+        retire = segments.pop(candidats[0] if candidats else len(segments) - 1)
+        print(f"Residu ecarte : {retire[0]:.1f}-{retire[1]:.1f}s ({retire[1] - retire[0]:.1f}s)")
+    if len(segments) != len(pistes):
+        sys.exit(f"Toujours {len(segments)} segments pour {len(pistes)} pistes, abandon.")
+
+    for (ident, _, _), (debut, fin) in zip(pistes, segments):
+        exporter_segment(fichier, max(0, debut - 0.15), min(duree, fin + 0.15), ident)
+    regenerer_manifest()
+    print("\nRecalage termine. Reverifie le theme dans tools/qa.html.")
+
+
 def commande_fichier(ident, fichier):
     fichier = Path(fichier)
     if not fichier.exists():
@@ -238,6 +294,8 @@ if __name__ == "__main__":
         commande_decouper(args[1], args[2])
     elif args[:1] == ["fichier"] and len(args) == 3:
         commande_fichier(args[1], args[2])
+    elif args[:1] == ["recaler"] and len(args) == 4:
+        commande_recaler(args[1], args[2], args[3])
     else:
         print(__doc__)
         sys.exit(1)
