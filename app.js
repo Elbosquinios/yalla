@@ -189,7 +189,7 @@ function ecranAccueil() {
   }).join("");
 
   app.innerHTML = html`
-    ${entete("Yalla 🇱🇧", false)}
+    ${entete("Yalla Izo 🇱🇧", false)}
     <p class="salutation">Ahla Isaure ! Quelques minutes par jour, chwaye chwaye.</p>
 
     <button class="bouton-principal" data-action="session">
@@ -253,7 +253,7 @@ function ecranGuide(premierLancement) {
     ["ou", "Se lit comme en francais (« ou »).", "jou3ane = affamee"],
   ];
   app.innerHTML = html`
-    ${premierLancement ? `<div class="entete"><h1>Yalla 🇱🇧</h1></div>` : entete("Guide", true)}
+    ${premierLancement ? `<div class="entete"><h1>Yalla Izo 🇱🇧</h1></div>` : entete("Guide", true)}
     <div class="guide">
       <h2>Lire le franco-arabe</h2>
       <p class="intro">Le libanais s'ecrit ici en lettres latines, comme les Libanais le font sur WhatsApp.
