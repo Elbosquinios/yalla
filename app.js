@@ -779,6 +779,14 @@ document.addEventListener("change", (e) => {
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => { /* hors ligne ou file:// */ });
+  // Quand une mise a jour de l'app s'installe, on recharge une fois pour
+  // basculer dessus immediatement (sinon il faut recharger deux fois a la main)
+  let rechargement = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (rechargement) return;
+    rechargement = true;
+    location.reload();
+  });
 }
 
 /* ===== Demarrage ===== */
