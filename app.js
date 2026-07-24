@@ -220,6 +220,11 @@ function ecranAccueil() {
         <div class="titre">Quiz de sens</div>
         <div class="sous-titre">Francais : retrouve la phrase libanaise</div>
       </button>
+      <button class="carte-mode" data-action="ecriture" style="grid-column: 1 / -1">
+        <div class="emoji">✍️</div>
+        <div class="titre">Ecrire en libanais</div>
+        <div class="sous-titre">Tape la phrase en franco-arabe, l'app te corrige</div>
+      </button>
     </div>
 
     <div class="section-titre">Themes</div>
@@ -281,6 +286,7 @@ function carteActuelle() { return session.file[session.index]; }
 function avancer() {
   session.index++;
   session.revele = false;
+  session.resultatEcriture = null;
   if (session.index >= session.file.length) { ecranFin(); return; }
   rendreCarte();
 }
@@ -431,6 +437,40 @@ function rendreCarte() {
     return;
   }
 
+  if (session.mode === "ecriture") {
+    const resultat = session.resultatEcriture; // null tant qu'elle n'a pas valide
+    app.innerHTML = html`
+      ${entete("Ecrire en libanais", true)}
+      <div class="ecran-exercice">
+        <div class="bandeau-mode"><strong>Ecris la phrase en franco-arabe.</strong> Rappel : 3 = ع, 7 = ح, 2 = ء.</div>
+        ${compteur}
+        <div class="question-quiz">
+          <div class="texte">${echapper(p.francais)}</div>
+          ${blocGenre(p)}
+        </div>
+        ${resultat ? `
+          <div class="flashcard" style="flex:0;min-height:0;padding:20px">
+            <div class="verdict ${resultat.type}">${resultat.type === "bon" ? "Sa77 ! (juste)" : resultat.type === "presque" ? "Presque !" : "Pas tout a fait"}</div>
+            ${resultat.type !== "bon" ? `<div class="ta-reponse">Ta reponse : ${echapper(resultat.saisie) || "(vide)"}</div>` : ""}
+            <div class="franco">${echapper(p.franco)}</div>
+            ${blocArabe(p)}
+            ${boutonAudio(p, true)}
+          </div>
+          <div class="actions-bas"><button class="btn-savais" data-action="suivant">Suivant</button></div>` : `
+          <form id="forme-ecriture" autocomplete="off">
+            <input type="text" id="saisie-ecriture" class="champ-ecriture" placeholder="chou baddik ?"
+              autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done">
+            <div class="actions-bas">
+              <button type="submit" class="btn-reveler">Verifier</button>
+            </div>
+          </form>`}
+      </div>
+    `;
+    const champ = document.getElementById("saisie-ecriture");
+    if (champ) champ.focus();
+    return;
+  }
+
   if (session.mode === "quiz-ecoute" || session.mode === "quiz-sens") {
     const estEcoute = session.mode === "quiz-ecoute";
     if (!session.choix || session.choixPour !== p.id) {
@@ -467,6 +507,47 @@ function rendreCarte() {
     `;
     return;
   }
+}
+
+/* ===== Mode ecriture : comparaison tolerante ===== */
+
+// Normalise une saisie franco-arabe : minuscules, sans ponctuation ni accents,
+// espaces reduits. On ne convertit pas 3/7/2 : les apprendre fait partie du jeu.
+function normaliserFranco(s) {
+  return s.toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[?!.,;:'"«»()-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function distanceEdition(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prec = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cour = [i];
+    for (let j = 1; j <= n; j++) {
+      cour[j] = Math.min(
+        prec[j] + 1,
+        cour[j - 1] + 1,
+        prec[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+    prec = cour;
+  }
+  return prec[n];
+}
+
+function corrigerEcriture(saisie, phrase) {
+  const attendu = normaliserFranco(phrase.franco);
+  const donne = normaliserFranco(saisie);
+  const d = distanceEdition(donne, attendu);
+  const tolerance = attendu.length > 12 ? 2 : 1;
+  if (d === 0) return "bon";
+  if (d <= tolerance) return "presque";
+  return "faux";
 }
 
 /* ===== Micro (shadowing) : enregistrement local, rien n'est envoye ===== */
@@ -590,6 +671,13 @@ function lancerQuizSens() {
   demarrerSession("quiz-sens", melanger(source).slice(0, 8));
 }
 
+function lancerEcriture() {
+  // En priorite les phrases deja vues ; sinon tout le corpus disponible
+  const connues = PHRASES.filter((p) => etat.boites[p.id]);
+  const source = connues.length >= 4 ? connues : PHRASES.filter((p) => !themePar(p.theme).bientot);
+  demarrerSession("ecriture", melanger(source).slice(0, 8));
+}
+
 /* ===== Ecran : liste d'un theme ===== */
 
 function ecranTheme(idTheme) {
@@ -633,6 +721,7 @@ document.addEventListener("click", (e) => {
     case "shadowing": lancerShadowing(); break;
     case "quiz-ecoute": lancerQuizEcoute(); break;
     case "quiz-sens": lancerQuizSens(); break;
+    case "ecriture": lancerEcriture(); break;
     case "theme": ecranTheme(cible.dataset.theme); break;
     case "jouer": jouerAudio(cible.dataset.id); break;
     case "micro": basculerMicro(); break;
@@ -653,6 +742,19 @@ document.addEventListener("click", (e) => {
     case "importer": document.getElementById("fichier-import").click(); break;
     case "telecharger-audio": telechargerAudios(); break;
   }
+});
+
+document.addEventListener("submit", (e) => {
+  if (e.target.id !== "forme-ecriture") return;
+  e.preventDefault();
+  const saisie = document.getElementById("saisie-ecriture").value;
+  const p = carteActuelle();
+  const type = corrigerEcriture(saisie, p);
+  session.resultatEcriture = { type, saisie };
+  reponseCarte(p.id, type !== "faux");
+  if (type === "bon") session.bonnes++;
+  rendreCarte();
+  jouerAudio(p.id);
 });
 
 document.addEventListener("change", (e) => {
