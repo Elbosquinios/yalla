@@ -96,3 +96,116 @@ et verifie l'alignement en ouvrant tools/qa.html via un serveur local.
 20. **el mezze**  `nou-019`
 21. **3azamne 3a chi mat3am**  `nou-020`
 22. **3azmine 3a chi mat3am**  `nou-020_f`  *(Variante adressee a une femme.)*
+
+## Theme « socialiser » (24 pistes, un seul memo vocal)
+
+1. **chou akhbarak ?**  `soc-001`
+2. **chou akhbarik ?**  `soc-001_f`  *(Variante adressee a une femme.)*
+3. **kello tamem**  `soc-002`
+4. **mnen ente ?**  `soc-003`
+5. **ana men Fransa**  `soc-004`
+6. **tcharrafna**  `soc-005`
+7. **ahla w sahla**  `soc-006`
+8. **addé 3omrik ?**  `soc-007`
+9. **chou btechteghle ?**  `soc-008`
+10. **3am bet3allam 3arabe**  `soc-009`
+11. **mabrouk !**  `soc-010`
+12. **hamdella 3al saleme**  `soc-011`
+13. **in cha2 Allah**  `soc-012`
+14. **wallah ?!**  `soc-013`
+15. **3an jad ?**  `soc-014`
+16. **ma3le**  `soc-015`
+17. **khalas !**  `soc-016`
+18. **chou ra2yik ?**  `soc-017`
+19. **ana mabsouta ktir**  `soc-018`  *(A LIRE TEL QUEL, au feminin, meme si ca sonne bizarre : c'est Isaure qui parle.)*
+20. **ana ta3bane chwaye**  `soc-019`  *(A LIRE TEL QUEL, au feminin, meme si ca sonne bizarre : c'est Isaure qui parle.)*
+21. **nchoufkon ba3den !**  `soc-020`
+22. **deere belik**  `soc-021`
+23. **deere belik**  `soc-021_f`  *(Variante adressee a une femme.)*
+24. **byejnen !**  `soc-022`
+
+## Theme « shopping » (20 pistes, un seul memo vocal)
+
+1. **adde ha2o ?**  `sho-001`
+2. **ghale ktir !**  `sho-002`
+3. **fi chi arkhas ?**  `sho-003`
+4. **3melle se3er mni7**  `sho-004`
+5. **badde hayda**  `sho-005`
+6. **3am betfarraj bas**  `sho-006`
+7. **fi 3andak mesure azghar ?**  `sho-007`
+8. **fi 3andik mesure azghar ?**  `sho-007_f`  *(Variante adressee a une femme.)*
+9. **fiye jarreb ?**  `sho-008`
+10. **7elo ktir hayda**  `sho-009`
+11. **bteftakhod carte ?**  `sho-010`
+12. **ma3e cash**  `sho-011`
+13. **khedle kis, 3mol ma3rouf**  `sho-012`
+14. **wen fi souk hon ?**  `sho-013`
+15. **baddne wa7de metla**  `sho-014`
+16. **chou hal lon el tene ?**  `sho-015`
+17. **ekhedto !**  `sho-016`
+18. **raje3lak bokra**  `sho-017`
+19. **raje3lik bokra**  `sho-017_f`  *(Variante adressee a une femme.)*
+20. **hayda kado la 7abibe**  `sho-018`
+
+## Theme « voyage » (18 pistes, un seul memo vocal)
+
+1. **wen el matar ?**  `voy-001`
+2. **badde rou7 3a Beirut**  `voy-002`
+3. **adde el taxi la hon ?**  `voy-003`
+4. **wa2ef hon, 3mol ma3rouf**  `voy-004`
+5. **3ala mahlak !**  `voy-005`
+6. **wen el ba7er ?**  `voy-006`
+7. **badde rou7 3al jabal**  `voy-007`
+8. **fi ghurfe fadye ?**  `voy-008`
+9. **adde el layle ?**  `voy-009`
+10. **day3ane ana**  `voy-010`  *(A LIRE TEL QUEL, au feminin, meme si ca sonne bizarre : c'est Isaure qui parle.)*
+11. **3a chmel aw 3a yamin ?**  `voy-011`
+12. **adde b3id ?**  `voy-012`
+13. **emta byemche el bus ?**  `voy-013`
+14. **sourra hon !**  `voy-014`
+15. **chou hal manzar !**  `voy-015`
+16. **el jaw 7elo lyom**  `voy-016`
+17. **chob ktir !**  `voy-017`
+18. **ma3e passport franseve**  `voy-018`
+
+## Theme « sortir » (16 pistes, un seul memo vocal)
+
+1. **chou 3am na3mel lyom ?**  `sor-001`
+2. **yalla nrou7 !**  `sor-002`
+3. **baddik tejé ma3na ?**  `sor-003`
+4. **akid !**  `sor-004`
+5. **ma fiye lyom**  `sor-005`
+6. **emta mnelta2a ?**  `sor-006`
+7. **wasalet ?**  `sor-007`
+8. **el sahra kenet khyele**  `sor-008`
+9. **badde or2os !**  `sor-009`
+10. **hal oghniye bet jannen**  `sor-010`
+11. **nrou7 3al cinema ?**  `sor-011`
+12. **kasak !**  `sor-012`
+13. **d7ekna ktir**  `sor-013`
+14. **sohrane la bokra ?**  `sor-014`  *(A LIRE TEL QUEL, au feminin, meme si ca sonne bizarre : c'est Isaure qui parle.)*
+15. **3azumye 3ande !**  `sor-015`
+16. **wen ahla mat3am hon ?**  `sor-016`
+
+## Theme « culture » (20 pistes, un seul memo vocal)
+
+1. **Lebnen**  `cul-001`
+2. **el arze**  `cul-002`
+3. **dabke**  `cul-003`
+4. **Fairuz**  `cul-004`
+5. **arak**  `cul-005`
+6. **day3a**  `cul-006`
+7. **sobhiye**  `cul-007`
+8. **3azime**  `cul-008`
+9. **jar**  `cul-009`
+10. **tfaddale !**  `cul-010`
+11. **nharak sa3id**  `cul-011`
+12. **nharik sa3id**  `cul-011_f`  *(Variante adressee a une femme.)*
+13. **Allah ma3ik**  `cul-012`
+14. **Allah ma3ik**  `cul-012_f`  *(Variante adressee a une femme.)*
+15. **ya 3ayne !**  `cul-013`
+16. **to2borne**  `cul-014`
+17. **ne3eman**  `cul-015`
+18. **sa7tein w 3afye**  `cul-016`
+19. **beit jeddo**  `cul-017`
+20. **el gharbe**  `cul-018`

@@ -1,7 +1,7 @@
 // Service worker de Yalla.
 // VERSION est a incrementer a chaque mise a jour de l'app : cela invalide
 // l'ancien cache et force le rechargement des fichiers.
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = "yalla-" + VERSION;
 
 const COEUR = [
