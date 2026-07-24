@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA audio Yalla</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; background: #faf3ea; color: #3d2f28; }
+    h1 { font-size: 1.3rem; }
+    p.aide { color: #8a7a6e; font-size: 0.9rem; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { padding: 8px 10px; border-bottom: 1px solid #e8ddd0; text-align: left; font-size: 0.92rem; }
+    .manquant { color: #d96c6c; font-weight: 600; }
+    audio { height: 32px; max-width: 220px; }
+    code { background: #f0e6da; padding: 1px 6px; border-radius: 6px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>Verification de l'alignement audio</h1>
+  <p class="aide">A ouvrir via un serveur local depuis la racine du projet
+  (<code>python3 -m http.server</code> puis http://localhost:8000/tools/qa.html).
+  Ecoute chaque ligne : le son doit correspondre au texte. Un decalage = la decoupe a rate une pause,
+  reenregistre le theme avec des silences plus francs.</p>
+  <table id="tableau"><tr><th>Id</th><th>Texte a entendre</th><th>Audio</th></tr></table>
+
+  <script src="../data/phrases.js"></script>
+  <script src="../data/audio_manifest.js"></script>
+  <script>
+    const tableau = document.getElementById("tableau");
+    const lignes = [];
+    for (const p of PHRASES) {
+      lignes.push({ id: p.id, texte: p.franco });
+      if (p.variantes && p.variantes.versF) lignes.push({ id: p.id + "_f", texte: p.variantes.versF + " (variante a une femme)" });
+    }
+    for (const l of lignes) {
+      const tr = document.createElement("tr");
+      const dispo = AUDIO_MANIFEST.includes(l.id);
+      tr.innerHTML = "<td><code>" + l.id + "</code></td><td>" + l.texte + "</td><td>" +
+        (dispo ? '<audio controls preload="none" src="../audio/' + l.id + '.m4a"></audio>' : '<span class="manquant">manquant</span>') +
+        "</td>";
+      tableau.appendChild(tr);
+    }
+  </script>
+</body>
+</html>
